@@ -8,13 +8,14 @@ import OpenAI from 'openai';
 
 
 const ChatbotApp = () => {
-  
   const openai = new OpenAI({
-    apiKey: process.env.REACT_APP_OPENAI_API_KEY, // This is also the default, can be omitted
-    dangerouslyAllowBrowser: true });
+    apiKey: process.env.REACT_APP_OPENAI_API_KEY,
+    dangerouslyAllowBrowser: true
+  });
     const [response, setResponse] = useState('');
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+
 
  
 
@@ -94,31 +95,3 @@ const handleSubmit = async (e) => {
 
 export default ChatbotApp;
   
-
-
-
-// API KEY OPEN AI - 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
-// function App() {
-
-
-
-
-
-//   return (
-//     <div className="App">
-//       <header className="App-header">
-   
-//         <a
-//           className="App-link"
-//           href="https://reactjs.org"
-//           target="_blank"
-//           rel="noopener noreferrer"
-//         >
-//           Learn React
-//         </a>
-//       </header>
-//     </div>
-//   );
-// }
-
-// export default App;
