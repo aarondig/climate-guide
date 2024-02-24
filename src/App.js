@@ -12,7 +12,7 @@ const ChatbotApp = () => {
     apiKey: process.env.REACT_APP_OPENAI_API_KEY,
     dangerouslyAllowBrowser: true
   });
-    const [response, setResponse] = useState('');
+    const [response, setResponse] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -23,18 +23,21 @@ const handleSubmit = async (e) => {
   e.preventDefault();
   setLoading(true);
 
-  const completion = await openai.chat.completions.create({
+  const stream = await openai.chat.completions.create({
     model: "gpt-3.5-turbo",
-    // stream: true,
     messages: [{"role": "system", "content": "you are a helpful assistant"}, 
     { role: 'user', content: input }],
- 
-    
-  // },{completionType: 'stream'});
-  });
 
-  console.log(completion.choices[0].message.content);
-  setResponse(completion.choices[0].message.content);
+    stream: true,
+  });
+  for await (const chunk of stream) {
+    console.log(chunk.choices[0]?.delta?.content || "");
+    setResponse(response => [...response, chunk.choices[0]?.delta?.content || ""])
+}
+
+
+  // console.log(stream.choices[0].message.content);
+  // setResponse(stream.choices[0].message.content);
   setInput('');
 
 
