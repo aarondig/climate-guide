@@ -32,46 +32,10 @@ const handleSubmit = async (e) => {
   // },{completionType: 'stream'});
   });
 
-
-  // setMessages([...messages, { role: 'user', content: input }, { role: 'assistant', content: completion.choices[0].message.content }]);
   console.log(completion.choices[0].message.content);
   setResponse(completion.choices[0].message.content);
   setInput('');
-  // const completion = await openai.chat.completions.create({
-  //   messages: [{"role": "system", "content": "You are a helpful assistant."},
-  //       {"role": "user", "content": "Who won the world series in 2020?"},
-  //       {"role": "assistant", "content": "The Los Angeles Dodgers won the World Series in 2020."},
-  //       {"role": "user", "content": "Where was it played?"}],
-  //   model: "gpt-3.5-turbo",
-  // });
 
-
-
-  // console.log(completion.choices[0]);
-
-
-// const APIBody = {
-//   messages: [{ role: "system", content: "You are a helpful assistant." }],
-//     model: "gpt-3.5-turbo",
-// }
-
-
-
-
-
-//   await fetch("https://api.openai.com/v1/completions", {
-//     method: 'POST',
-//     headers: {
-//       "Content-Type": 'application/json',
-//       "authorization": 'Bearer ' + API_KEY
-//     },
-//     body: JSON.stringify(APIBody)
-//   }).then((data)=> {
-//     return data.json();
-//   }).then((result)=> {
-//     console.log(result);
-//     // setApicompletion(result);
-//   })
 
   setLoading(false);
 }
