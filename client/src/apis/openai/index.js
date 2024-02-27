@@ -3,8 +3,13 @@ import { useState, useRef, useEffect } from "react";
 import { get_pf_data_schema } from "./getdata";
 import tools from "./tools";
 import instructions from "./instructions";
+import UseAnimations from 'react-useanimations';
+import load from 'react-useanimations/lib/loading';
+import FeatherIcon, { arrowUp } from 'feather-icons-react';
+
 import "./style.css";
 // require('dotenv').config();
+
 
 const axios = require("axios");
 
@@ -53,6 +58,7 @@ const openai = new OpenAI({
 // manageAssistant().catch(console.error);
 
 const Assistant = () => {
+  const threads = useRef();
   const [address, setAddress] = useState("");
   const [country, setCountry] = useState();
 
@@ -99,10 +105,12 @@ const Assistant = () => {
     // msg is Messages
     const msgs = await openai.beta.threads.messages.list(thrd.id);
 
-
-    msgs.body.data.map((element, index, array)=>{
-        return setThread((thread) => [...thread, array[array.length - index - 1]]);
-    })
+    msgs.body.data.map((element, index, array) => {
+      return setThread((thread) => [
+        ...thread,
+        array[array.length - index - 1],
+      ]);
+    });
 
     setInput("");
     setLoading(false);
@@ -110,6 +118,7 @@ const Assistant = () => {
 
   async function checkStatus(threadId, runId) {
     let isComplete = false;
+
     while (!isComplete) {
       const runStatus = await openai.beta.threads.runs.retrieve(
         threadId,
@@ -122,81 +131,70 @@ const Assistant = () => {
       }
     }
   }
-useEffect(()=>{
-console.log(thread)
-},[thread])
+  useEffect(() => {
+    // console.log(threads.current.scrollHeight)
+    window.scrollTo({ top: threads.current.scrollHeight, behavior: "smooth" });
+  }, [thread]);
   return (
     <div id="chat">
-      <div className="text-container">
+      <div className="threads" ref={threads}>
         {thread &&
           thread.map((e, i) => {
-            return (
-              <div className="message" key={i}>
-                <div className="content">
-                  <h3 className="title">Assistant</h3>
-                  <p className="text">{e.content[0].text.value}</p>
-                </div>
-              </div>
-            );
+            switch (e.role) {
+              case "user":
+                return (
+                  <div className="message user" key={i}>
+                    <div className="content">
+                      <p className="title">You</p>
+                      <div className="text">{e.content[0].text.value}</div>
+                    </div>
+                  </div>
+                );
+              case "assistant":
+                return (
+                  <div className="message assistant" key={i}>
+                    <div className="content">
+                      <div className="title">{e.role}</div>
+                      <p className="text">{e.content[0].text.value}</p>
+                    </div>
+                  </div>
+                );
+            }
           })}
-        <strong>API completion:</strong>
-        {response} <br />
       </div>
 
       <div
-        className="testbox"
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          width: "100%",
-          whiteSpace: "wrap",
-        }}
+        className="search"
       >
-        <pre
-          style={{
-            width: "80%",
-            padding: "20px",
-            whiteSpace: "wrap",
-          }}
-        >
-          <strong>API completion:</strong>
-          {response} <br />
-        </pre>
+        <div className="detail">
+
+
+        </div>
+        <div className="searchbar">
+          <textarea
+            className="input"
+            type="text"
+            value={input}
+            placeholder="Please ask to openai"
+            onChange={(e) => setInput(e.target.value)}
+          ></textarea>
+        </div>
+        <div className="submit">
+          <button
+            className="submit-btn"
+            disabled={loading || input.length === 0}
+            type="submit"
+            onClick={handleSubmit}
+          >
+{loading ? <UseAnimations animation={load} strokeWidth={1} strokeColor="#fff" size={40} speed={.2} wrapperStyle={{ padding: 0 }} />
+            
+: <FeatherIcon icon="arrow-up" strokeColor="#fff" size={34} strokeWidth={1.8} />
+}
+{/* {loading ? "Generating..." : "Generate"} */}
+          </button>
+        </div>
+        
       </div>
-      <div
-        style={{
-          position: "absolute",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100%",
-          width: "100%",
-        }}
-      >
-        <textarea
-          type="text"
-          value={input}
-          placeholder="Please ask to openai"
-          onChange={(e) => setInput(e.target.value)}
-        ></textarea>
-        <button
-          disabled={loading || input.length === 0}
-          type="submit"
-          onClick={handleSubmit}
-        >
-          {loading ? "Generating..." : "Generate"}
-        </button>
-      </div>
-      {response && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "left",
-            boxSizing: "border-box",
-          }}
-        ></div>
-      )}
     </div>
   );
 };

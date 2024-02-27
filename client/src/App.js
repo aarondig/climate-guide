@@ -82,9 +82,11 @@ const ChatbotApp = () => {
   // };
 
 
-  
+
   return (
+    <main id="app">
     <Assistant/>
+    </main>
     // <>
     //  <div className="testbox"
     //  style={{
