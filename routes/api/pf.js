@@ -30,10 +30,10 @@ router.get("/", (req, res) => {
     }
 }
 
-async function getPfData(warmingScenario = "1.5") {
+async function getPfData() {
 const country = req.query.country;
 const address = req.query.address;
-
+const warmingScenario = `${req.query.warming_scenario !== undefined ? req.query.warming_scenario : 1.5}`;
 
     const variables = {};
     const location = `

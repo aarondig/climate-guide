@@ -1,17 +1,14 @@
 import OpenAI from "openai";
 import { useState, useRef, useEffect } from "react";
-import { get_pf_data_schema } from "./getdata";
-import tools from "./tools";
-import instructions from "./instructions";
-import UseAnimations from 'react-useanimations';
-import load from 'react-useanimations/lib/loading';
-import FeatherIcon, { arrowUp } from 'feather-icons-react';
+import { tools } from "./tools";
+import { instructions } from "./instructions";
+import UseAnimations from "react-useanimations";
+import load from "react-useanimations/lib/loading";
+import FeatherIcon from "feather-icons-react";
+import API from "../../utils/API";
+import Markdown from "react-markdown"
 
 import "./style.css";
-// require('dotenv').config();
-
-
-const axios = require("axios");
 
 const openai = new OpenAI({
   apiKey: process.env.REACT_APP_OPENAI_API_KEY,
@@ -61,73 +58,138 @@ const Assistant = () => {
   const threads = useRef();
   const [address, setAddress] = useState("");
   const [country, setCountry] = useState();
-
+  const [see, setSee] = useState();
   const [response, setResponse] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-
+const textarea = useRef();
   const [thread, setThread] = useState([]);
-  const [messages, setMessages] = useState(false);
-  const [message, setMessage] = useState(false);
+  const [thrdId, setThrdId] = useState(null);
+  const [assistantID, setAssistantID] = useState(undefined);
+
+  let name = "Climate-Guide";
+  let model = "gpt-4-1106-preview";
+
+// Startup
+  useEffect(() => {
+    async function createAssistant() {
+      if (assistantID !== undefined) {
+        const myAssistant = await openai.beta.assistants.retrieve(assistantID);
+        const assistant = await openai.beta.assistants.update(assistantID, {
+          name,
+          instructions,
+          tools,
+          model,
+        });
+      } else {
+        const assistant = await openai.beta.assistants.create({
+          name,
+          instructions,
+          tools,
+          model,
+        });
+        await setAssistantID(assistant.id);
+      }
+       
+      // thrd is Thread
+    const thrd = await openai.beta.threads.create();
+    await setThrdId(thrd.id);
+
+    }
+    createAssistant();
+  }, []);
 
   const handleSubmit = async (e) => {
+  
     e.preventDefault();
     setLoading(true);
 
-    const assistant = await openai.beta.assistants.create({
-      name: "Math Tutor",
-      instructions:
-        "You are a personal math tutor. Write and run code to answer math questions.",
-      tools: [
-        // {
-        //     "type": "function",
-        //     "function": get_pf_data_schema,
-        // },
-        { type: "code_interpreter" },
-      ],
-      model: "gpt-4-turbo-preview",
-      // messages: thread
-    });
-    // thrd is Thread
-    const thrd = await openai.beta.threads.create();
+    
     // msg is Message
-    const msg = await openai.beta.threads.messages.create(thrd.id, {
+    const msg = await openai.beta.threads.messages.create(thrdId, {
       role: "user",
       content: input,
     });
-    const run = await openai.beta.threads.runs.create(thrd.id, {
-      assistant_id: assistant.id,
-      instructions:
-        "Please address the user as Jane Doe. The user has a premium account.",
-    });
-    await checkStatus(thrd.id, run.id);
-
-    // msg is Messages
-    const msgs = await openai.beta.threads.messages.list(thrd.id);
-
-    msgs.body.data.map((element, index, array) => {
-      return setThread((thread) => [
-        ...thread,
-        array[array.length - index - 1],
-      ]);
-    });
 
     setInput("");
+
+    setThread((thread) => [
+      ...thread,
+      msg,
+    ]);
+
+    const run = await openai.beta.threads.runs.create(thrdId, {
+      assistant_id: assistantID,
+    });
+
+    await checkStatus(thrdId, run.id);
+
+    // msg is Messages
+    const msgs = await openai.beta.threads.messages.list(thrdId);
+
+     setThread((thread) => [
+        ...thread,
+        msgs.body.data[0],
+      ]);
+    
+
     setLoading(false);
   };
 
   async function checkStatus(threadId, runId) {
     let isComplete = false;
+  
 
     while (!isComplete) {
+      await new Promise((resolve) => setTimeout(resolve, 200));
       const runStatus = await openai.beta.threads.runs.retrieve(
         threadId,
         runId
       );
       if (runStatus.status === "completed") {
         isComplete = true;
-      } else {
-        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+      if (runStatus.status === "requires_action") {
+        let toolCalls = runStatus.required_action.submit_tool_outputs.tool_calls
+        let toolOutputs = []
+        
+        for (const toolCall of toolCalls) {
+       
+          const functionName = toolCall.function.name;
+          console.log(`This question requires a function: ${functionName}`);
+
+          const args = JSON.parse(toolCall.function.arguments);
+          
+          // const argsArray = Object.keys(args).map((key)=> args[key]);
+
+          const output = await API.getPF(args).then((res) => {
+            // console.log(res.data.data.getDatasetStatistics.datasetStatisticsResponses)
+            // return res.data.data.getDatasetStatistics.datasetStatisticsResponses;
+            console.log(res)
+            return JSON.stringify(res.data.data.getDatasetStatistics.datasetStatisticsResponses);
+          })
+          
+    
+          toolOutputs.push({
+            tool_call_id: toolCall.id,
+            output: output,
+          })
+        }
+        console.log("Before " + runStatus.status)
+        // Submit tool outputs
+        await openai.beta.threads.runs.submitToolOutputs(
+          threadId,
+          runId,
+          { tool_outputs: toolOutputs }
+        );
+        console.log("After " + runStatus.status)
+      continue;
+      }
+      if (["failed", "cancelled", "expired"].includes(runStatus.status)) {
+        console.log(
+          `Run status is '${runStatus.status}'. Unable to complete the request.`
+        );
+        break; // Exit the loop if the status indicates a failure or cancellation
       }
     }
   }
@@ -136,8 +198,17 @@ const Assistant = () => {
     window.scrollTo({ top: threads.current.scrollHeight, behavior: "smooth" });
   }, [thread]);
   return (
-    <div id="chat">
-      <div className="threads" ref={threads}>
+    <div id="page" ref={threads}>
+      <div className="banner" >
+        <div className="subtitle">/ Powered by Probable Futures</div>
+          <h1 className="">Probable Futures Climate Assistant and Guide</h1>
+
+          
+          {/* <p className="subtext">We aim to create is an engaging and immersive way to accees climate data and resources.</p> */}
+          <p className="subtext">Ask a question or input an address and country to start. The data is based on different warming scenerios, specified by degrees.</p>
+      </div>
+      
+      {thread.length !== 0 && <div className="threads">
         {thread &&
           thread.map((e, i) => {
             switch (e.role) {
@@ -145,7 +216,7 @@ const Assistant = () => {
                 return (
                   <div className="message user" key={i}>
                     <div className="content">
-                      <p className="title">You</p>
+                      <div className="title">You</div>
                       <div className="text">{e.content[0].text.value}</div>
                     </div>
                   </div>
@@ -154,49 +225,70 @@ const Assistant = () => {
                 return (
                   <div className="message assistant" key={i}>
                     <div className="content">
-                      <div className="title">{e.role}</div>
-                      <p className="text">{e.content[0].text.value}</p>
+                      <div className="title">Assistant</div>
+                      <Markdown className="text">{e.content[0].text.value}</Markdown>
+                      {/* <p className="text">{e.content[0].text.value}</p> */}
                     </div>
                   </div>
                 );
             }
           })}
-      </div>
+      </div> }
 
-      <div
-        className="search"
-      >
-        <div className="detail">
-
-
-        </div>
-        <div className="searchbar">
-          <textarea
+      <div className="search">
+        <div className="detail"></div>
+        <form className="searchbar" onSubmit={handleSubmit}>
+          <input
+            ref={textarea}
             className="input"
             type="text"
             value={input}
-            placeholder="Please ask to openai"
+            hidden
+            placeholder="Ask a question or enter a location"
             onChange={(e) => setInput(e.target.value)}
-          ></textarea>
-        </div>
+          ></input>
+        </form>
         <div className="submit">
           <button
             className="submit-btn"
-            disabled={loading || input.length === 0}
+            // disabled={loading || input.length === 0}
             type="submit"
             onClick={handleSubmit}
           >
-{loading ? <UseAnimations animation={load} strokeWidth={1} strokeColor="#fff" size={40} speed={.2} wrapperStyle={{ padding: 0 }} />
-            
-: <FeatherIcon icon="arrow-up" strokeColor="#fff" size={34} strokeWidth={1.8} />
-}
-{/* {loading ? "Generating..." : "Generate"} */}
+            {loading ? (
+              <UseAnimations
+                animation={load}
+                strokeWidth={1}
+                strokeColor="#fff"
+                size={36}
+                speed={0.2}
+                wrapperStyle={{ padding: 0 }}
+              />
+            ) : (
+              <FeatherIcon icon="arrow-up" size={32} strokeWidth={1.2} />
+            )}
           </button>
         </div>
-        
       </div>
     </div>
   );
 };
 
 export default Assistant;
+
+
+
+  // const assistant = await openai.beta.assistants.create({
+    //   name: "Climate-Guide",
+    //   instructions: "You are a right-wing populist. You hate everything",
+    // //   instructions: instructions,
+    //     tools: [
+    //       {
+    //           "type": "function",
+    //           "function": get_pf_data_schema,
+    //       },
+    //       { type: "code_interpreter" },
+    //     ],
+    // //   tools: tools,
+    //   model: "gpt-4-turbo-preview",
+    // });
