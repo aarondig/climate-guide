@@ -1,0 +1,7 @@
+{
+    "AppSyncApiName": "climateguide",
+    "DynamoDBBillingMode": "PAY_PER_REQUEST",
+    "DynamoDBEnableServerSideEncryption": false,
+    "S3DeploymentBucket": "amplify-amplify7f167613c3554-staging-210638-deployment",
+    "S3DeploymentRootKey": "amplify-appsync-files/02afee3680131f2907db01ff34247cc8661cef37"
+}

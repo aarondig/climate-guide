@@ -1,0 +1,83 @@
+{
+  "providers": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-amplify7f167613c3554-staging-210638-authRole",
+      "UnauthRoleArn": "arn:aws:iam::096214855722:role/amplify-amplify7f167613c3554-staging-210638-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::096214855722:role/amplify-amplify7f167613c3554-staging-210638-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-amplify7f167613c3554-staging-210638-deployment",
+      "UnauthRoleName": "amplify-amplify7f167613c3554-staging-210638-unauthRole",
+      "StackName": "amplify-amplify7f167613c3554-staging-210638",
+      "StackId": "arn:aws:cloudformation:us-east-1:096214855722:stack/amplify-amplify7f167613c3554-staging-210638/438304a0-d67d-11ee-8edf-0adb97798635",
+      "AmplifyAppId": "d2kurmgyfxktl0"
+    }
+  },
+  "auth": {
+    "climateguidefaced416": {
+      "service": "Cognito",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "customAuth": false,
+      "frontendAuthConfig": {
+        "socialProviders": [],
+        "usernameAttributes": [],
+        "signupAttributes": [
+          "EMAIL"
+        ],
+        "passwordProtectionSettings": {
+          "passwordPolicyMinLength": 8,
+          "passwordPolicyCharacters": []
+        },
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [
+          "SMS"
+        ],
+        "verificationMechanisms": [
+          "EMAIL"
+        ]
+      },
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-amplify7f167613c3554-staging-210638-deployment/amplify-cfn-templates/auth/climateguidefaced416-cloudformation-template.json",
+        "logicalId": "authclimateguidefaced416"
+      },
+      "lastPushTimeStamp": "2024-03-08T17:29:06.272Z",
+      "output": {
+        "UserPoolId": "us-east-1_KZ6WKLVFm",
+        "AppClientIDWeb": "6b0q5mepa7kqnk33sbcjko1p2s",
+        "AppClientID": "7pb43j55cf0mmfaa78717b55e5",
+        "IdentityPoolId": "us-east-1:6cc0ba92-ece1-4fbb-a051-5b75d84d8bf0",
+        "UserPoolArn": "arn:aws:cognito-idp:us-east-1:096214855722:userpool/us-east-1_KZ6WKLVFm",
+        "IdentityPoolName": "climateguidefaced416_identitypool_faced416__staging",
+        "UserPoolName": "climateguidefaced416_userpool_faced416"
+      },
+      "lastPushDirHash": "It33PDEuET0avk/LcndhW0yNkrQ="
+    }
+  },
+  "api": {
+    "climateguide": {
+      "service": "AppSync",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "output": {
+        "authConfig": {
+          "defaultAuthentication": {
+            "authenticationType": "API_KEY",
+            "apiKeyConfig": {
+              "apiKeyExpirationDays": 7
+            }
+          },
+          "additionalAuthenticationProviders": []
+        },
+        "GraphQLAPIIdOutput": "pwkcueyofrcijcwemcx63swzlm",
+        "GraphQLAPIEndpointOutput": "https://35kokd2efzcepfcohe2rubfbti.appsync-api.us-east-1.amazonaws.com/graphql",
+        "GraphQLAPIKeyOutput": "da2-crrkvda5xvc5fhzle6ot23wpnm"
+      },
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-amplify7f167613c3554-staging-210638-deployment/amplify-cfn-templates/api/cloudformation-template.json",
+        "logicalId": "apiclimateguide"
+      },
+      "lastPushTimeStamp": "2024-03-08T17:29:06.273Z",
+      "lastPushDirHash": "Z42E8kMhbd5q/iWRIX/6kR7FH3o="
+    }
+  }
+}
