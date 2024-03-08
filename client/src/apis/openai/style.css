@@ -313,6 +313,7 @@ p {
     width: 100%;
   
 }
+
 ol {
     border-bottom: solid 1px #EAEAED;
     padding-bottom: 40px;
@@ -355,6 +356,38 @@ strong {
 /* li>strong {
     padding-bottom: 40px;
 } */
+
+
+
+.banner {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    height: 80vh;
+    max-width: 100%;
+    padding: 60px 10vw;
+background: #1F4843;
+}
+.main-title {
+    font-size: 40px;
+    max-width: 100%;
+    color: white;
+}
+.subtitle {
+    /* color: #1F4843; */
+    font-size: 1em;
+    line-height: 1.2;
+    max-width: 100%;
+    color: white;
+}
+.subtext {
+    font-size: 1.15em;
+    /* max-width: 32vw; */
+    max-width: 100%;
+    color: white;
+    opacity: .8;
+}
+
 
 
 }

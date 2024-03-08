@@ -165,11 +165,10 @@ const textarea = useRef();
           const output = await API.getPF(args).then((res) => {
             // console.log(res.data.data.getDatasetStatistics.datasetStatisticsResponses)
             // return res.data.data.getDatasetStatistics.datasetStatisticsResponses;
-            console.log(res)
+            console.log(res.data.data.getDatasetStatistics.datasetStatisticsResponses);
             return JSON.stringify(res.data.data.getDatasetStatistics.datasetStatisticsResponses);
           })
           
-    
           toolOutputs.push({
             tool_call_id: toolCall.id,
             output: output,
@@ -201,7 +200,7 @@ const textarea = useRef();
     <div id="page" ref={threads}>
       <div className="banner" >
         <div className="subtitle">/ Powered by Probable Futures</div>
-          <h1 className="">Probable Futures Climate Assistant and Guide</h1>
+          <h1 className="main-title">Probable Futures Climate Assistant and Guide</h1>
 
           
           {/* <p className="subtext">We aim to create is an engaging and immersive way to accees climate data and resources.</p> */}
